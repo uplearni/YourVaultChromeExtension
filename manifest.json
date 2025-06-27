@@ -1,0 +1,22 @@
+{
+    "manifest_version" : 3,
+    "name" : "Save to Collection",
+    "version":"1.0",
+    "description":"Save current page to a collection",
+    "content_scripts":[
+        {
+            "matches":["http://localhost:5173/*"],
+            "js":["content.js"]
+        }
+    ],
+    "permissions":["tabs","storage","scripting"],
+    "host_permissions":["<all_urls>"],
+    "action":{
+        "default_popup":"popup.html",
+        "defsult_icon":"+"
+    },
+    "background":{
+        "service_worker": "background.js"
+    }
+
+}
