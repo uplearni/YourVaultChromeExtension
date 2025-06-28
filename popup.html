@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save to Collection</title>
+  <meta charset="UTF-8" />
+  <title>Save to Collection</title>
 </head>
 <body>
-    <h3>Save this page</h3>
+  <h3>Save this page</h3>
+
   <select id="collectionSelect"></select>
-  <button id="saveBtn">Save</button>
-  
-  <input type="text" id="newCollectionName" placeholder="New collection name" />
-  <button id="createCollectionBtn">Create Collection</button>
+  <button id="saveBtn">Save Page to Collection</button>
+  <button id="screenshotBtn">Save Screenshot to Collection</button>
 
-  <button id="screenshotBtn">📸 Save Screenshot</button>
+  <h4>Create New Collection</h4>
+  <input type="text" id="newCollectionName" placeholder="Collection name" />
+  <button id="createUrlCollectionBtn">New Collection + Save Page</button>
+  <button id="createScreenshotCollectionBtn">New Collection + Save Screenshot</button>
 
-
-  <div id="loading" style="display:none">Loading...</div>
   <div id="status"></div>
+  <div id="loading" style="display: none;">Loading...</div>
+
   <script src="popup.js"></script>
 </body>
 </html>
