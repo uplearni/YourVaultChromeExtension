@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const collectionSelect = document.getElementById("collectionSelect");
+  const collectionSearch = document.getElementById("collectionSearch");
+  const datalist = document.getElementById("collectionOptions");
   const saveBtn = document.getElementById("saveBtn");
   const statusText = document.getElementById("status");
   const createUrlBtn = document.getElementById("createUrlCollectionBtn");
@@ -11,22 +12,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const title = tab.title;
   const url = tab.url;
+  let collectionsData = [];
 
-  // save URL to collection
+  function getSelectedCollectionId() {
+    const selectedName = collectionSearch.value.trim();
+    const found = collectionsData.find((c) => c.cname === selectedName);
+    return found ? found._id : null;
+  }
+
   async function saveUrlToCollection(collectionId, token) {
     const itemsRes = await fetch(`http://localhost:3000/api/item?collectionId=${collectionId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     const itemsData = await itemsRes.json();
     const items = itemsData.data || [];
-
     const alreadyExists = items.some(item => item.url === url);
-    if (alreadyExists) {
-      return { ok: false, message: "⚠️ Page already saved in this collection" };
-    }
+    if (alreadyExists) return { ok: false, message: "⚠️ Page already saved in this collection" };
 
     const saveRes = await fetch("http://localhost:3000/api/item", {
       method: "POST",
@@ -34,20 +35,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        type: "url",
-        title,
-        url,
-        description: "",
-        collectionId,
-      }),
+      body: JSON.stringify({ type: "url", title, url, description: "", collectionId }),
     });
 
     if (!saveRes.ok) return { ok: false, message: "❌ Failed to save page" };
     return { ok: true, message: "✅ Page saved" };
   }
 
-  //save Screenshot to collection
   async function saveScreenshotToCollection(collectionId, token) {
     const imageUri = await chrome.tabs.captureVisibleTab();
     const blob = await (await fetch(imageUri)).blob();
@@ -61,16 +55,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const res = await fetch("http://localhost:3000/api/item", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
 
     return res.ok;
   }
 
-  //Get Token
   chrome.storage.local.get("token", async ({ token }) => {
     if (!token) {
       statusText.innerText = "Please visit your web app and login first";
@@ -80,36 +71,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       loading.style.display = "block";
       const res = await fetch("http://localhost:3000/api/collection/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       loading.style.display = "none";
 
       const response = await res.json();
-      const data = response.collection || [];
+      collectionsData = response.collection || [];
 
-      data.forEach((col) => {
+      datalist.innerHTML = "";
+      collectionsData.forEach((col) => {
         const option = document.createElement("option");
-        option.value = col._id;
-        option.textContent = col.cname;
-        collectionSelect.appendChild(option);
+        option.value = col.cname;
+        datalist.appendChild(option);
       });
 
-      // 👉 Save current page to selected collection
       saveBtn.onclick = async () => {
-        const selectedCollectionId = collectionSelect.value;
+        const selectedCollectionId = getSelectedCollectionId();
+        if (!selectedCollectionId) {
+          statusText.innerText = "⚠️ Invalid collection selected";
+          return;
+        }
         loading.style.display = "block";
         const result = await saveUrlToCollection(selectedCollectionId, token);
         statusText.innerText = result.message;
         loading.style.display = "none";
       };
 
-      // 👉 Take screenshot and save to selected collection
       screenshotBtn.onclick = async () => {
-        const selectedCollectionId = collectionSelect.value;
+        const selectedCollectionId = getSelectedCollectionId();
         if (!selectedCollectionId) {
-          statusText.innerText = "⚠️ Please select a collection first";
+          statusText.innerText = "⚠️ Invalid collection selected";
           return;
         }
         loading.style.display = "block";
@@ -120,7 +111,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         loading.style.display = "none";
       };
 
-      // 👉 Create collection + save current page
       createUrlBtn.onclick = async () => {
         const cname = newCollectionInput.value.trim();
         if (!cname) {
@@ -151,7 +141,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         loading.style.display = "none";
       };
 
-      // 👉 Create collection + save screenshot
       createScreenshotBtn.onclick = async () => {
         const cname = newCollectionInput.value.trim();
         if (!cname) {
@@ -183,7 +172,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         newCollectionInput.value = "";
         loading.style.display = "none";
       };
-
     } catch (err) {
       console.error(err);
       loading.style.display = "none";
