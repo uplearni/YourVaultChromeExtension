@@ -42,20 +42,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         loading.style.display = "block";
         const itemsRes = await fetch(`http://localhost:3000/api/item?collectionId=${selectedCollectionId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    const itemsData = await itemsRes.json();
-    const items = itemsData.data || [];
+        const itemsData = await itemsRes.json();
+        const items = itemsData.data || [];
 
-    const alreadyExists = items.some(item => item.url === url);
-    if (alreadyExists) {
-      statusText.innerText = "⚠️ Page already saved in this collection";
-      loading.style.display = "none";
-      return;
-    }
+        const alreadyExists = items.some(item => item.url === url);
+        if (alreadyExists) {
+          statusText.innerText = "⚠️ Page already saved in this collection";
+          loading.style.display = "none";
+          return;
+        }
 
         const saveRes = await fetch("http://localhost:3000/api/item", {
           method: "POST",
@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             collectionId: selectedCollectionId,
           }),
         });
+
         loading.style.display = "none";
 
         if (saveRes.ok) {
@@ -102,25 +103,75 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { data } = await createRes.json();
 
         const saveRes = await fetch("http://localhost:3000/api/item", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        type: "url",
-        title,
-        url,
-        description: "",
-        collectionId: data.id,
-      }),
-    });
-        
-    if (!saveRes.ok) throw new Error("Failed to save page");
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type: "url",
+            title,
+            url,
+            description: "",
+            collectionId: data.id,
+          }),
+        });
 
-    statusText.innerText = `✅ Page saved to "${data.collection}"`;
-    newCollectionInput.value = "";
+        if (!saveRes.ok) throw new Error("Failed to save page");
+
+        statusText.innerText = `✅ Page saved to "${data.collection}"`;
+        newCollectionInput.value = "";
       };
+
+      const screenshotBtn = document.getElementById("screenshotBtn");
+
+      screenshotBtn.onclick = async () => {
+        statusText.innerText = "Capturing Screenshot";
+        loading.style.display = "block";
+
+        try {
+          // 1. Capture visible tab
+          const imageUri = await chrome.tabs.captureVisibleTab();
+
+          // 2. Convert to Blob
+          const blob = await (await fetch(imageUri)).blob();
+
+          // 3. Ask which collection to save in
+          const selectedCollectionId = collectionSelect.value;
+          if (!selectedCollectionId) {
+            statusText.innerText = "⚠️ Please select a collection first";
+            loading.style.display = "none";
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("type", "file");
+          formData.append("title", `Screenshot - ${title}`);
+          formData.append("description", "Screenshot from extension");
+          formData.append("collectionId", selectedCollectionId);
+          formData.append("file", blob, `${title.slice(0, 20)}.png`);
+
+          const uploadRes = await fetch("http://localhost:3000/api/item", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            statusText.innerText = "✅ Screenshot saved!";
+          } else {
+            statusText.innerText = "❌ Failed to upload screenshot";
+          }
+        } catch (err) {
+          console.error(err);
+          statusText.innerText = "❌ Error capturing screenshot";
+        } finally {
+          loading.style.display = "none";
+        }
+      };
+
     } catch (err) {
       console.error(err);
       loading.style.display = "none";
