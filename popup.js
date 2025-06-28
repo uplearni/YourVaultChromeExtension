@@ -48,8 +48,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const itemsData = await itemsRes.json();
-    const items = itemsData.items || [];
-    
+    const items = itemsData.data || [];
+
+    const alreadyExists = items.some(item => item.url === url);
+    if (alreadyExists) {
+      statusText.innerText = "⚠️ Page already saved in this collection";
+      loading.style.display = "none";
+      return;
+    }
+
         const saveRes = await fetch("http://localhost:3000/api/item", {
           method: "POST",
           headers: {
