@@ -13,7 +13,7 @@
     "host_permissions":["<all_urls>"],
     "action":{
         "default_popup":"popup.html",
-        "defsult_icon":"+"
+        "default_icon":"+"
     },
     "background":{
         "service_worker": "background.js"

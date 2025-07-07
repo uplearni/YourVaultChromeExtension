@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const itemsData = await itemsRes.json();
     const items = itemsData.data || [];
     const alreadyExists = items.some(item => item.url === url);
-    if (alreadyExists) return { ok: false, message: "⚠️ Page already saved in this collection" };
+    if (alreadyExists) return { ok: false, message: "Page already saved in this collection" };
 
     const saveRes = await fetch("http://localhost:3000/api/item", {
       method: "POST",
@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       body: JSON.stringify({ type: "url", title, url, description: "", collectionId }),
     });
 
-    if (!saveRes.ok) return { ok: false, message: "❌ Failed to save page" };
-    return { ok: true, message: "✅ Page saved" };
+    if (!saveRes.ok) return { ok: false, message: " Failed to save page" };
+    return { ok: true, message: "Page saved" };
   }
 
   async function saveScreenshotToCollection(collectionId, token) {
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveBtn.onclick = async () => {
         const selectedCollectionId = getSelectedCollectionId();
         if (!selectedCollectionId) {
-          statusText.innerText = "⚠️ Invalid collection selected";
+          statusText.innerText = "Invalid collection selected";
           return;
         }
         loading.style.display = "block";
@@ -100,14 +100,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       screenshotBtn.onclick = async () => {
         const selectedCollectionId = getSelectedCollectionId();
         if (!selectedCollectionId) {
-          statusText.innerText = "⚠️ Invalid collection selected";
+          statusText.innerText = " Invalid collection selected";
           return;
         }
         loading.style.display = "block";
         const ok = await saveScreenshotToCollection(selectedCollectionId, token);
         statusText.innerText = ok
-          ? "✅ Screenshot saved!"
-          : "❌ Failed to save screenshot";
+          ? " Screenshot saved!"
+          : " Failed to save screenshot";
         loading.style.display = "none";
       };
 
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!createRes.ok) {
-          statusText.innerText = "❌ Failed to create collection";
+          statusText.innerText = "Failed to create collection";
           loading.style.display = "none";
           return;
         }
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!createRes.ok) {
-          statusText.innerText = "❌ Failed to create collection";
+          statusText.innerText = "Failed to create collection";
           loading.style.display = "none";
           return;
         }
@@ -167,15 +167,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { data } = await createRes.json();
         const ok = await saveScreenshotToCollection(data.id, token);
         statusText.innerText = ok
-          ? `✅ Screenshot saved to "${data.collection}"`
-          : "❌ Failed to save screenshot";
+          ? `Screenshot saved to "${data.collection}"`
+          : "Failed to save screenshot";
         newCollectionInput.value = "";
         loading.style.display = "none";
       };
     } catch (err) {
       console.error(err);
       loading.style.display = "none";
-      statusText.innerText = "⚠️ Error fetching collections";
+      statusText.innerText = "Error fetching collections";
     }
   });
 });
