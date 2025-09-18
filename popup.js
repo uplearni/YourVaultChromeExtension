@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function saveUrlToCollection(collectionId, token) {
-    const itemsRes = await fetch(`http://localhost:3000/api/item?collectionId=${collectionId}`, {
+    const itemsRes = await fetch(`https://yourvault.onrender.com/api/item?collectionId=${collectionId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const itemsData = await itemsRes.json();
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const alreadyExists = items.some(item => item.url === url);
     if (alreadyExists) return { ok: false, message: "Page already saved in this collection" };
 
-    const saveRes = await fetch("http://localhost:3000/api/item", {
+    const saveRes = await fetch("https://yourvault.onrender.com/api/item", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,12 +48,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const formData = new FormData();
     formData.append("type", "file");
-    formData.append("title", `Screenshot - ${title}`);
+    formData.append("title", `Ss - ${title}`);
     formData.append("description", "Screenshot from extension");
     formData.append("collectionId", collectionId);
     formData.append("file", blob, `${title.slice(0, 20)}.png`);
 
-    const res = await fetch("http://localhost:3000/api/item", {
+    const res = await fetch("https://yourvault.onrender.com/api/item", {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       loading.style.display = "block";
-      const res = await fetch("http://localhost:3000/api/collection/", {
+      const res = await fetch("https://yourvault.onrender.com/api/collection/", {
         headers: { Authorization: `Bearer ${token}` },
       });
       loading.style.display = "none";
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         loading.style.display = "block";
-        const createRes = await fetch("http://localhost:3000/api/collection", {
+        const createRes = await fetch("https://yourvault.onrender.com/api/collection", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         loading.style.display = "block";
-        const createRes = await fetch("http://localhost:3000/api/collection", {
+        const createRes = await fetch("https://yourvault.onrender.com/api/collection", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
